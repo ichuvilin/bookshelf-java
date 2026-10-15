@@ -3,6 +3,7 @@ package com.ichuvilin.bookshelf.api.controller;
 import com.ichuvilin.bookshelf.api.model.request.RegisterRequest;
 import com.ichuvilin.bookshelf.api.model.response.AuthResponse;
 import com.ichuvilin.bookshelf.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.register(request));
     }
 }

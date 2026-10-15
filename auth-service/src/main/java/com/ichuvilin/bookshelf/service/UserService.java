@@ -2,9 +2,9 @@ package com.ichuvilin.bookshelf.service;
 
 import com.ichuvilin.bookshelf.db.entity.User;
 import com.ichuvilin.bookshelf.db.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,4 +20,11 @@ public class UserService {
         return repository.save(user);
     }
 
+    boolean existsByEmail(String email) {
+        return repository.existsByEmail(email);
+    }
+
+    boolean existsByUsername(String username) {
+        return repository.existsByUsername(username);
+    }
 }
