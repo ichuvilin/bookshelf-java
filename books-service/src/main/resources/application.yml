@@ -1,0 +1,25 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: books-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/books}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
