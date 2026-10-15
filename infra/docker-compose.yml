@@ -1,0 +1,38 @@
+services:
+  # Auth Service Database
+  auth-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Books Service Database
+  books-postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: books
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - books_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  auth_postgres_data:
+  books_postgres_data:
