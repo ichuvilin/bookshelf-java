@@ -33,10 +33,12 @@ public class ServiceKeyFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String path = request.getServletPath();
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI()
+                .substring(request.getContextPath().length());
 
-        return !path.startsWith(INTERNAL_PATH) && !path.equals("/internal/v1");
+        return !path.startsWith(INTERNAL_PATH)
+                && !path.equals("/internal/v1");
     }
 
     @Override
