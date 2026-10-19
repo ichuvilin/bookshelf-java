@@ -32,7 +32,6 @@ class InternalEndpointsTest extends AbstractIntegrationTest {
     @Test
     void shouldReturn401WhenServiceKeyIsMissing() throws Exception {
         mockMvc.perform(post("/internal/v1/users/batch")
-                        .header("X-Debug-Filter", "true")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {"ids":[1,2]}
