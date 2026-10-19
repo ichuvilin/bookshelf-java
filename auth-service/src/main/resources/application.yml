@@ -18,6 +18,11 @@ spring:
   flyway:
     enabled: true
 
+security:
+  jwt:
+    secret: ${JWT_SECRET:xi5ZsE6ZEt21Zsj7DLiT+i6dn5er+2KdK6ekc25hpEA=}
+    access-token-ttl: 15m
+
 management:
   endpoints:
     web:
