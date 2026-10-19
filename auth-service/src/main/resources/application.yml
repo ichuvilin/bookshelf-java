@@ -20,7 +20,7 @@ spring:
 
 security:
   service:
-    key: ${SERVICE-KEY}
+    key: ${SERVICE_KEY}
   jwt:
     secret: ${JWT_SECRET}
     access-token-ttl: 15m

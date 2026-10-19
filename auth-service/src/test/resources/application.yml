@@ -1,0 +1,26 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: auth-service
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+security:
+  service:
+    key: test-service-key
+  jwt:
+    secret: xi5ZsE6ZEt21Zsj7DLiT+i6dn5er+2KdK6ekc25hpEA=
+    access-token-ttl: 15m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

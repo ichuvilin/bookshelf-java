@@ -19,9 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@TestPropertySource(properties = "security.service.key=test-service-key")
 class InternalEndpointsTest extends AbstractIntegrationTest {
-
     private static final String SERVICE_KEY = "test-service-key";
 
     @MockitoBean
