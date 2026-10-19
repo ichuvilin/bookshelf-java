@@ -1,5 +1,6 @@
 package com.ichuvilin.bookshelf.service;
 
+import com.ichuvilin.bookshelf.api.model.request.BookCreationRequest;
 import com.ichuvilin.bookshelf.api.model.request.BookListRequest;
 import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.api.model.response.BookResponse;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -61,5 +63,18 @@ public class BookService {
                 book.getPublishedYear(),
                 book.getCreatedAt(),
                 book.getUpdatedAt());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public BookResponse create(BookCreationRequest request, Long userId) {
+        Book book = Book.builder()
+                .title(request.title())
+                .author(request.author())
+                .description(request.description())
+                .isbn(request.isbn())
+                .publishedYear(request.publishedYear())
+                .userId(userId)
+                .build();
+        return toResponse(repository.save(book));
     }
 }

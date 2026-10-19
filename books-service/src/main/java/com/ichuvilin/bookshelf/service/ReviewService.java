@@ -1,5 +1,6 @@
 package com.ichuvilin.bookshelf.service;
 
+import com.ichuvilin.bookshelf.api.model.request.ReviewCreationRequest;
 import com.ichuvilin.bookshelf.api.model.response.ReviewResponse;
 import com.ichuvilin.bookshelf.db.entity.Review;
 import com.ichuvilin.bookshelf.db.repository.BookRepository;
@@ -7,6 +8,7 @@ import com.ichuvilin.bookshelf.db.repository.ReviewRepository;
 import com.ichuvilin.bookshelf.exception.BookNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -34,5 +36,17 @@ public class ReviewService {
                 review.getContent(),
                 review.getCreatedAt(),
                 review.getUpdatedAt());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public ReviewResponse create(Long bookId, Long userId, ReviewCreationRequest request) {
+        Review review = Review.builder()
+                .bookId(bookId)
+                .userId(userId)
+                .rating(request.rating())
+                .title(request.title())
+                .content(request.content())
+                .build();
+        return toResponse(repository.save(review));
     }
 }
