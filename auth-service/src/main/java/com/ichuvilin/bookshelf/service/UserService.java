@@ -2,6 +2,8 @@ package com.ichuvilin.bookshelf.service;
 
 import com.ichuvilin.bookshelf.db.entity.User;
 import com.ichuvilin.bookshelf.db.repository.UserRepository;
+import com.ichuvilin.bookshelf.domain.UserPublic;
+import com.ichuvilin.bookshelf.exception.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,5 +32,10 @@ public class UserService {
 
     public Optional<User> findByEmail(String email) {
         return repository.findByEmail(email);
+    }
+
+    public UserPublic getUserById(Long userId) {
+        User user = repository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return UserPublic.toPublic(user);
     }
 }
