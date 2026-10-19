@@ -3,8 +3,10 @@ package com.ichuvilin.bookshelf.api.controller;
 import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.api.model.response.BookResponse;
 import com.ichuvilin.bookshelf.api.model.response.PaginationResponse;
+import com.ichuvilin.bookshelf.api.model.response.ReviewResponse;
 import com.ichuvilin.bookshelf.exception.GlobalExceptionHandler;
 import com.ichuvilin.bookshelf.service.BookService;
+import com.ichuvilin.bookshelf.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -31,6 +33,9 @@ class BookControllerTest {
     @MockBean
     private BookService bookService;
 
+    @MockBean
+    private ReviewService reviewService;
+
     @Test
     void listReturnsDataAndPagination() throws Exception {
         Instant timestamp = Instant.parse("2026-01-01T00:00:00Z");
@@ -45,6 +50,7 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.data.length()").value(1))
                 .andExpect(jsonPath("$.data[0].id").value(1))
                 .andExpect(jsonPath("$.data[0].title").value("Clean Code"))
+                .andExpect(jsonPath("$.data[0].isbn").value("978-0134685991"))
                 .andExpect(jsonPath("$.pagination.page").value(1))
                 .andExpect(jsonPath("$.pagination.limit").value(10))
                 .andExpect(jsonPath("$.pagination.total").value(21))
@@ -65,5 +71,33 @@ class BookControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").isNotEmpty());
+    }
+
+    @Test
+    void listRejectsUnsupportedSort() throws Exception {
+        mockMvc.perform(get("/api/v1/books").param("sort", "password"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void listRejectsUnsupportedOrder() throws Exception {
+        mockMvc.perform(get("/api/v1/books").param("order", "sideways"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    @Test
+    void reviewListReturnsReviews() throws Exception {
+        Instant timestamp = Instant.parse("2026-01-01T00:00:00Z");
+        given(reviewService.getReviewsByBookId(7L)).willReturn(List.of(
+                new ReviewResponse(1L, 7L, 42L, 5, "Great", "Loved it", timestamp, timestamp)));
+
+        mockMvc.perform(get("/api/v1/books/7/reviews"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].bookId").value(7))
+                .andExpect(jsonPath("$[0].rating").value(5))
+                .andExpect(jsonPath("$[0].title").value("Great"));
     }
 }
