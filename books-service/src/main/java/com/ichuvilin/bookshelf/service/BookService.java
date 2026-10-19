@@ -5,6 +5,7 @@ import com.ichuvilin.bookshelf.api.model.response.BookResponse;
 import com.ichuvilin.bookshelf.db.entity.Book;
 import com.ichuvilin.bookshelf.db.repository.BookRepository;
 import com.ichuvilin.bookshelf.db.repository.specification.BookSpecifications;
+import com.ichuvilin.bookshelf.exception.BookNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,5 +46,20 @@ public class BookService {
                         book.getCreatedAt(),
                         book.getUpdatedAt()))
                 .toList();
+    }
+
+    public BookResponse getById(Long id) {
+        return repository
+                .findById(id)
+                .map(book -> new BookResponse(
+                        book.getId(),
+                        book.getTitle(),
+                        book.getDescription(),
+                        book.getIsbn(),
+                        book.getAuthor(),
+                        book.getPublishedYear(),
+                        book.getCreatedAt(),
+                        book.getUpdatedAt()))
+                .orElseThrow(BookNotFoundException::new);
     }
 }

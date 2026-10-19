@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,5 +25,10 @@ public class BookController {
     @GetMapping
     public ResponseEntity<List<BookResponse>> list(@Valid @ModelAttribute BookListRequest request) {
         return ResponseEntity.ok(bookService.list(request));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<BookResponse> byId(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getById(id));
     }
 }
