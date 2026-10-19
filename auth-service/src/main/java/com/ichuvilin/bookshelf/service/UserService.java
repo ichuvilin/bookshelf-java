@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -59,4 +60,10 @@ public class UserService {
 
         return UserPublic.toPublic(repository.save(user));
     }
+
+    public List<UserPublic> getUsersById(List<Long> userIds) {
+        List<User> users = repository.findAllById(userIds);
+        return users.stream().map(UserPublic::toPublic).toList();
+    }
+
 }
