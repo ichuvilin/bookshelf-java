@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleUserAlreadyExists(
-            UserAlreadyExistsException exception, HttpServletRequest request) {
+            UsernameAlreadyExistsException exception, HttpServletRequest request) {
         HttpStatus status = HttpStatus.CONFLICT;
 
         ErrorResponse response = new ErrorResponse(

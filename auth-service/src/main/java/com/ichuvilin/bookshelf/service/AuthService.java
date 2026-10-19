@@ -7,9 +7,11 @@ import com.ichuvilin.bookshelf.db.entity.User;
 import com.ichuvilin.bookshelf.domain.UserPublic;
 import com.ichuvilin.bookshelf.exception.EmailAlreadyExistsException;
 import com.ichuvilin.bookshelf.exception.InvalidCredentialsException;
+import com.ichuvilin.bookshelf.exception.UsernameAlreadyExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,12 +20,13 @@ public class AuthService {
     private final UserService userService;
     private final JwtService jwtService;
 
+    @Transactional(rollbackFor = Exception.class)
     public AuthResponse register(RegisterRequest request) {
         if (userService.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException("Email already exists");
         }
         if (userService.existsByUsername(request.getUsername())) {
-            throw new EmailAlreadyExistsException("Username already exists");
+            throw new UsernameAlreadyExistsException("Username already exists");
         }
 
         String passwdHash = passwordEncoder.encode(request.getPassword());
