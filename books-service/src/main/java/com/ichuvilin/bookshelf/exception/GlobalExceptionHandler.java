@@ -57,6 +57,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(problem);
     }
 
+    @ExceptionHandler(NotBookOwnerException.class)
+    public ResponseEntity<ErrorResponse> handleNotBookOwner(
+            NotBookOwnerException exception, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ErrorResponse response = new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(status).body(response);
+    }
+
     private ResponseEntity<ErrorResponse> badRequest(BindException exception, HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 

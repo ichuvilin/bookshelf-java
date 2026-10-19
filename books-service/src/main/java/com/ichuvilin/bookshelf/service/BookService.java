@@ -2,6 +2,7 @@ package com.ichuvilin.bookshelf.service;
 
 import com.ichuvilin.bookshelf.api.model.request.BookCreationRequest;
 import com.ichuvilin.bookshelf.api.model.request.BookListRequest;
+import com.ichuvilin.bookshelf.api.model.request.BookUpdateRequest;
 import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.api.model.response.BookResponse;
 import com.ichuvilin.bookshelf.api.model.response.PaginationResponse;
@@ -9,6 +10,7 @@ import com.ichuvilin.bookshelf.db.entity.Book;
 import com.ichuvilin.bookshelf.db.repository.BookRepository;
 import com.ichuvilin.bookshelf.db.repository.specification.BookSpecifications;
 import com.ichuvilin.bookshelf.exception.BookNotFoundException;
+import com.ichuvilin.bookshelf.exception.NotBookOwnerException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -75,6 +77,43 @@ public class BookService {
                 .publishedYear(request.publishedYear())
                 .userId(userId)
                 .build();
+        return toResponse(repository.save(book));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(Long id, Long userId) {
+        Book book = repository.findById(id).orElseThrow(BookNotFoundException::new);
+        if (!book.getUserId().equals(userId)) {
+            throw new NotBookOwnerException();
+        }
+        repository.delete(book);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public BookResponse update(Long id, Long userId, BookUpdateRequest request) {
+        Book book = repository.findById(id).orElseThrow(BookNotFoundException::new);
+        if (!book.getUserId().equals(userId)) {
+            throw new NotBookOwnerException();
+        }
+
+        if (book.getTitle() != null
+                && request.title() != null
+                && !request.title().equals(book.getTitle())) {
+            book.setTitle(request.title());
+        }
+
+        if (book.getDescription() != null
+                && request.description() != null
+                && !request.description().equals(book.getDescription())) {
+            book.setDescription(request.description());
+        }
+
+        if (book.getAuthor() != null
+                && request.author() != null
+                && !request.author().equals(book.getAuthor())) {
+            book.setAuthor(request.author());
+        }
+
         return toResponse(repository.save(book));
     }
 }
