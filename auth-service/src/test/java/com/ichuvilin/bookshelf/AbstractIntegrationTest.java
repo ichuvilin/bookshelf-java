@@ -48,7 +48,7 @@ public abstract class AbstractIntegrationTest {
     protected JdbcTemplate jdbcTemplate;
 
     @BeforeEach
-    void cleanDatabase() {
+    protected void cleanDatabase() {
         userRepository.deleteAll();
     }
 }
