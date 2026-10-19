@@ -36,7 +36,7 @@ public class BookController {
         return ResponseEntity.ok(bookService.getById(id));
     }
 
-    @GetMapping("/{id}/review")
+    @GetMapping("/{id}/reviews")
     public ResponseEntity<List<ReviewResponse>> reviewList(@PathVariable Long id) {
         return ResponseEntity.ok(reviewService.getReviewsByBookId(id));
     }
