@@ -37,12 +37,6 @@ class InternalEndpointsTest extends AbstractIntegrationTest {
                         .content("""
                             {"ids":[1,2]}
                             """))
-                .andDo(result -> {
-                    System.out.println("Servlet path: "
-                            + result.getRequest().getServletPath());
-                    System.out.println("Request URI: "
-                            + result.getRequest().getRequestURI());
-                })
                 .andExpect(status().isUnauthorized());
     }
 
