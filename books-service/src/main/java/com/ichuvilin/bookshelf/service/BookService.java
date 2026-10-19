@@ -1,12 +1,15 @@
 package com.ichuvilin.bookshelf.service;
 
 import com.ichuvilin.bookshelf.api.model.request.BookListRequest;
+import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.api.model.response.BookResponse;
+import com.ichuvilin.bookshelf.api.model.response.PaginationResponse;
 import com.ichuvilin.bookshelf.db.entity.Book;
 import com.ichuvilin.bookshelf.db.repository.BookRepository;
 import com.ichuvilin.bookshelf.db.repository.specification.BookSpecifications;
 import com.ichuvilin.bookshelf.exception.BookNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,7 +23,7 @@ import java.util.List;
 public class BookService {
     private final BookRepository repository;
 
-    public List<BookResponse> list(BookListRequest request) {
+    public BookListResponse list(BookListRequest request) {
         Sort.Direction direction = "desc".equalsIgnoreCase(request.order()) ? Sort.Direction.DESC : Sort.Direction.ASC;
 
         String sortField = switch (request.sort() == null ? "" : request.sort()) {
@@ -33,33 +36,30 @@ public class BookService {
 
         Specification<Book> specification = BookSpecifications.search(request.search());
 
-        return repository
-                .findAll(specification, pageable)
-                .get()
-                .map(book -> new BookResponse(
-                        book.getId(),
-                        book.getTitle(),
-                        book.getDescription(),
-                        book.getIsbn(),
-                        book.getAuthor(),
-                        book.getPublishedYear(),
-                        book.getCreatedAt(),
-                        book.getUpdatedAt()))
-                .toList();
+        Page<Book> books = repository.findAll(specification, pageable);
+
+        List<BookResponse> data =
+                books.getContent().stream().map(this::toResponse).toList();
+
+        PaginationResponse pagination = new PaginationResponse(
+                books.getNumber() + 1, books.getSize(), books.getTotalElements(), books.getTotalPages());
+
+        return new BookListResponse(data, pagination);
     }
 
     public BookResponse getById(Long id) {
-        return repository
-                .findById(id)
-                .map(book -> new BookResponse(
-                        book.getId(),
-                        book.getTitle(),
-                        book.getDescription(),
-                        book.getIsbn(),
-                        book.getAuthor(),
-                        book.getPublishedYear(),
-                        book.getCreatedAt(),
-                        book.getUpdatedAt()))
-                .orElseThrow(BookNotFoundException::new);
+        return repository.findById(id).map(this::toResponse).orElseThrow(BookNotFoundException::new);
+    }
+
+    private BookResponse toResponse(Book book) {
+        return new BookResponse(
+                book.getId(),
+                book.getTitle(),
+                book.getDescription(),
+                book.getIsbn(),
+                book.getAuthor(),
+                book.getPublishedYear(),
+                book.getCreatedAt(),
+                book.getUpdatedAt());
     }
 }

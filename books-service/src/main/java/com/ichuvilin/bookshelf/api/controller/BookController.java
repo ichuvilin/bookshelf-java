@@ -1,6 +1,7 @@
 package com.ichuvilin.bookshelf.api.controller;
 
 import com.ichuvilin.bookshelf.api.model.request.BookListRequest;
+import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.api.model.response.BookResponse;
 import com.ichuvilin.bookshelf.service.BookService;
 import jakarta.validation.Valid;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @Validated
 @RestController
 @RequestMapping("/api/v1/books")
@@ -23,7 +22,7 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public ResponseEntity<List<BookResponse>> list(@Valid @ModelAttribute BookListRequest request) {
+    public ResponseEntity<BookListResponse> list(@Valid @ModelAttribute BookListRequest request) {
         return ResponseEntity.ok(bookService.list(request));
     }
 
