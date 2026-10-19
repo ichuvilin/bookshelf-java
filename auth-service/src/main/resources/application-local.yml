@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+security:
+  service:
+    key: dev-key
+  jwt:
+    secret: xi5ZsE6ZEt21Zsj7DLiT+i6dn5er+2KdK6ekc25hpEA=
+    access-token-ttl: 15m
