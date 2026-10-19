@@ -18,6 +18,11 @@ spring:
   flyway:
     enabled: true
 
+auth:
+  service:
+    base-url: ${AUTH_SERVICE_URL:http://localhost:8081}
+    key: ${SERVICE_KEY}
+
 management:
   endpoints:
     web:
