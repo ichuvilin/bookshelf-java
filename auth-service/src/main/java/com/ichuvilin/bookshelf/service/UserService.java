@@ -46,17 +46,17 @@ public class UserService {
     }
 
     @Transactional
-    public UserPublic update(Long userId, @Valid UpdateUserRequest request) {
-        if (existsByUsername(request.getUsername())) {
-            throw new UsernameAlreadyExistsException();
-        }
-
+    public UserPublic update(Long userId, UpdateUserRequest request) {
         User user = repository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-        user.setUsername(request.getUsername());
+        if (!user.getUsername().equals(request.getUsername())) {
+            if (existsByUsername(request.getUsername())) {
+                throw new UsernameAlreadyExistsException();
+            }
 
-        repository.save(user);
+            user.setUsername(request.getUsername());
+        }
 
-        return UserPublic.toPublic(user);
+        return UserPublic.toPublic(repository.save(user));
     }
 }
