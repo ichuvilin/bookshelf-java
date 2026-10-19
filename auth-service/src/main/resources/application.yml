@@ -5,6 +5,24 @@ spring:
   application:
     name: auth-service
 
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/auth}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:xi5ZsE6ZEt21Zsj7DLiT+i6dn5er+2KdK6ekc25hpEA=}
+    access-token-ttl: 15m
+
 management:
   endpoints:
     web:
