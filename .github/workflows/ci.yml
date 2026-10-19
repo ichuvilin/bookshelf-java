@@ -2,9 +2,6 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
-      - impl-auth
   pull_request:
     branches:
       - master
