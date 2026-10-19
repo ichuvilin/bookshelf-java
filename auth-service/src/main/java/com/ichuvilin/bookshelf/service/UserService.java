@@ -17,7 +17,7 @@ public class UserService {
                 .username(username).email(email).password(password)
                 .build();
 
-        return repository.save(user);
+        return repository.saveAndFlush(user);
     }
 
     public boolean existsByEmail(String email) {
