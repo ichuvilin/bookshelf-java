@@ -29,7 +29,7 @@ public class AuthService {
             throw new EmailAlreadyExistsException("Email already exists");
         }
         if (userService.existsByUsername(request.getUsername())) {
-            throw new UsernameAlreadyExistsException("Username already exists");
+            throw new UsernameAlreadyExistsException();
         }
 
         String passwdHash = passwordEncoder.encode(request.getPassword());
@@ -43,7 +43,7 @@ public class AuthService {
                 throw new EmailAlreadyExistsException("Email already exists");
             }
             if (Constants.UNIQUE_USERNAME_CONSTRAINT_NAME.equals(constraint)) {
-                throw new UsernameAlreadyExistsException("Username already exists");
+                throw new UsernameAlreadyExistsException();
             }
 
             throw ex;

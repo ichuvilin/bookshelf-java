@@ -1,9 +1,15 @@
 package com.ichuvilin.bookshelf.service;
 
+import com.ichuvilin.bookshelf.api.model.request.UpdateUserRequest;
 import com.ichuvilin.bookshelf.db.entity.User;
 import com.ichuvilin.bookshelf.db.repository.UserRepository;
+import com.ichuvilin.bookshelf.domain.UserPublic;
+import com.ichuvilin.bookshelf.exception.UserNotFoundException;
+import com.ichuvilin.bookshelf.exception.UsernameAlreadyExistsException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -14,7 +20,9 @@ public class UserService {
 
     public User create(String username, String email, String password) {
         User user = User.builder()
-                .username(username).email(email).password(password)
+                .username(username)
+                .email(email)
+                .password(password)
                 .build();
 
         return repository.saveAndFlush(user);
@@ -30,5 +38,25 @@ public class UserService {
 
     public Optional<User> findByEmail(String email) {
         return repository.findByEmail(email);
+    }
+
+    public UserPublic getUserById(Long userId) {
+        User user = repository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return UserPublic.toPublic(user);
+    }
+
+    @Transactional
+    public UserPublic update(Long userId, UpdateUserRequest request) {
+        User user = repository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        if (!user.getUsername().equals(request.getUsername())) {
+            if (existsByUsername(request.getUsername())) {
+                throw new UsernameAlreadyExistsException();
+            }
+
+            user.setUsername(request.getUsername());
+        }
+
+        return UserPublic.toPublic(repository.save(user));
     }
 }
