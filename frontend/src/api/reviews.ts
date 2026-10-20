@@ -3,30 +3,57 @@ import {toast} from 'sonner';
 import {booksApi} from './client';
 import type {CreateReviewRequest, Review, ReviewListResponse, ReviewsParams, UpdateReviewRequest} from '@/types/api';
 
-export function useBookReviews(bookId: string, params: ReviewsParams = {}) {
+type JavaReview = {
+    id: number;
+    bookId: number;
+    userId: number;
+    rating: number;
+    title?: string | null;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+function mapReview(review: JavaReview): Review {
+    return {
+        id: String(review.id),
+        book_id: String(review.bookId),
+        user_id: String(review.userId),
+        // books-service owns reviews but does not currently expose usernames.
+        user: {id: String(review.userId), username: `Пользователь #${review.userId}`},
+        rating: review.rating,
+        title: review.title ?? undefined,
+        content: review.content,
+        created_at: review.createdAt,
+        updated_at: review.updatedAt,
+    };
+}
+
+export function useBookReviews(bookId: string, _params: ReviewsParams = {}) {
     return useQuery({
-        queryKey: ['reviews', bookId, params],
+        queryKey: ['reviews', bookId],
         queryFn: async () => {
-            const response = await booksApi.get<ReviewListResponse>(
-                `/api/v1/books/${bookId}/reviews`,
-                {params}
-            );
-            return response.data;
+            const response = await booksApi.get<JavaReview[]>(`/api/v1/books/${bookId}/reviews`);
+            const data = response.data.map(mapReview);
+            const result: ReviewListResponse = {
+                data,
+                pagination: {page: 1, limit: data.length, total: data.length, total_pages: data.length ? 1 : 0},
+            };
+            return result;
         },
         enabled: !!bookId,
         retry: false,
     });
 }
 
+// The current Java API does not provide GET /api/v1/reviews/{id}.
 export function useReview(id: string) {
-    return useQuery({
+    return useQuery<Review>({
         queryKey: ['reviews', 'single', id],
         queryFn: async () => {
-            const response = await booksApi.get<Review>(`/api/v1/reviews/${id}`);
-            return response.data;
+            throw new Error('Получение одной рецензии пока не поддерживается Java API');
         },
-        enabled: !!id,
-        retry: false,
+        enabled: false,
     });
 }
 
@@ -35,11 +62,8 @@ export function useCreateReview(bookId: string) {
 
     return useMutation({
         mutationFn: async (data: CreateReviewRequest) => {
-            const response = await booksApi.post<Review>(
-                `/api/v1/books/${bookId}/reviews`,
-                data
-            );
-            return response.data;
+            const response = await booksApi.post<JavaReview>(`/api/v1/books/${bookId}/reviews`, data);
+            return mapReview(response.data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ['reviews', bookId]});
@@ -61,11 +85,8 @@ export function useUpdateReview(reviewId: string, bookId: string) {
 
     return useMutation({
         mutationFn: async (data: UpdateReviewRequest) => {
-            const response = await booksApi.put<Review>(
-                `/api/v1/reviews/${reviewId}`,
-                data
-            );
-            return response.data;
+            const response = await booksApi.put<JavaReview>(`/api/v1/reviews/${reviewId}`, data);
+            return mapReview(response.data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({queryKey: ['reviews', bookId]});
@@ -99,16 +120,13 @@ export function useDeleteReview(bookId: string) {
     });
 }
 
-export function useUserReviews(userId: string, params: ReviewsParams = {}) {
-    return useQuery({
-        queryKey: ['reviews', 'user', userId, params],
+// Listing reviews by user is not part of the current Java API contract.
+export function useUserReviews(userId: string, _params: ReviewsParams = {}) {
+    return useQuery<ReviewListResponse>({
+        queryKey: ['reviews', 'user', userId],
         queryFn: async () => {
-            const response = await booksApi.get<ReviewListResponse>(
-                `/api/v1/users/${userId}/reviews`,
-                {params}
-            );
-            return response.data;
+            throw new Error('Список рецензий пользователя пока не поддерживается Java API');
         },
-        enabled: !!userId,
+        enabled: false,
     });
 }
