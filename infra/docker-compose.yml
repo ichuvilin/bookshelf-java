@@ -33,6 +33,16 @@ services:
       timeout: 5s
       retries: 5
 
+  frontend:
+    build: ../frontend
+    ports:
+      - "5174:80"
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+      books-postgres:
+        condition: service_healthy
+
 volumes:
   auth_postgres_data:
   books_postgres_data:

@@ -10,5 +10,6 @@ public record BookResponse(
         String isbn,
         String author,
         LocalDate publishedYear,
+        Long createdBy,
         Instant createdAt,
         Instant updatedAt) {}

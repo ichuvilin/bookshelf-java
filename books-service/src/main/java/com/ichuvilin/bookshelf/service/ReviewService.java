@@ -9,32 +9,53 @@ import com.ichuvilin.bookshelf.db.repository.ReviewRepository;
 import com.ichuvilin.bookshelf.exception.BookNotFoundException;
 import com.ichuvilin.bookshelf.exception.NotReviewOwnerException;
 import com.ichuvilin.bookshelf.exception.ReviewNotFoundException;
+import com.ichuvilin.bookshelf.integration.auth.AuthClient;
+import com.ichuvilin.bookshelf.integration.auth.dto.AuthUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository repository;
     private final BookRepository bookRepository;
+    private final AuthClient authClient;
 
     public List<ReviewResponse> getReviewsByBookId(Long bookId) {
         if (!bookRepository.existsById(bookId)) {
             throw new BookNotFoundException();
         }
 
-        return repository.findAllByBookId(bookId).stream().map(this::toResponse).toList();
+        List<Review> reviews = repository.findAllByBookId(bookId);
+        Map<Long, String> usernames = getUsernames(
+                reviews.stream().map(Review::getUserId).distinct().toList());
+
+        return reviews.stream().map(review -> toResponse(review, usernames)).toList();
     }
 
-    private ReviewResponse toResponse(Review review) {
+    private Map<Long, String> getUsernames(Collection<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return authClient.getUsersByIds(userIds).stream()
+                .collect(Collectors.toMap(AuthUserResponse::id, AuthUserResponse::username, (first, ignored) -> first));
+    }
+
+    private ReviewResponse toResponse(Review review, Map<Long, String> usernames) {
         return new ReviewResponse(
                 review.getId(),
                 review.getBookId(),
                 review.getUserId(),
+                usernames.getOrDefault(review.getUserId(), "Удалённый пользователь"),
                 review.getRating(),
                 review.getTitle(),
                 review.getContent(),
@@ -54,7 +75,9 @@ public class ReviewService {
                 .title(request.title())
                 .content(request.content())
                 .build();
-        return toResponse(repository.save(review));
+
+        Review saved = repository.save(review);
+        return toResponse(saved, getUsernames(List.of(userId)));
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -85,6 +108,7 @@ public class ReviewService {
 
         review.setRating(request.rating());
 
-        return toResponse(repository.save(review));
+        Review saved = repository.save(review);
+        return toResponse(saved, getUsernames(List.of(userId)));
     }
 }

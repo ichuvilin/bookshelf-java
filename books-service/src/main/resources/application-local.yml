@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/books
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+auth:
+  service:
+    base-url: http://localhost:8081
+    key: dev-key
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

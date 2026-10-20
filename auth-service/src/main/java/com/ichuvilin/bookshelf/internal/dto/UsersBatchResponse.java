@@ -1,7 +1,7 @@
 package com.ichuvilin.bookshelf.internal.dto;
 
-import com.ichuvilin.bookshelf.domain.UserPublic;
+import com.ichuvilin.bookshelf.domain.UserSummary;
 
 import java.util.List;
 
-public record UsersBatchResponse(List<UserPublic> users) {}
+public record UsersBatchResponse(List<UserSummary> users) {}
