@@ -37,13 +37,9 @@ public class BookService {
         };
 
         Pageable pageable = PageRequest.of(request.page() - 1, request.limit(), Sort.by(direction, sortField));
-
         Specification<Book> specification = BookSpecifications.search(request.search());
-
         Page<Book> books = repository.findAll(specification, pageable);
-
-        List<BookResponse> data =
-                books.getContent().stream().map(this::toResponse).toList();
+        List<BookResponse> data = books.getContent().stream().map(this::toResponse).toList();
 
         PaginationResponse pagination = new PaginationResponse(
                 books.getNumber() + 1, books.getSize(), books.getTotalElements(), books.getTotalPages());
@@ -63,6 +59,7 @@ public class BookService {
                 book.getIsbn(),
                 book.getAuthor(),
                 book.getPublishedYear(),
+                book.getUserId(),
                 book.getCreatedAt(),
                 book.getUpdatedAt());
     }
@@ -99,11 +96,9 @@ public class BookService {
         if (request.title() != null && !request.title().equals(book.getTitle())) {
             book.setTitle(request.title());
         }
-
         if (request.description() != null && !request.description().equals(book.getDescription())) {
             book.setDescription(request.description());
         }
-
         if (request.author() != null && !request.author().equals(book.getAuthor())) {
             book.setAuthor(request.author());
         }
