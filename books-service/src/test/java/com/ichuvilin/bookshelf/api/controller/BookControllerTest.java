@@ -49,7 +49,7 @@ class BookControllerTest {
         Instant timestamp = Instant.parse("2026-01-01T00:00:00Z");
         BookResponse book = new BookResponse(
                 1L, "Clean Code", "Description", "978-0134685991", "Robert C. Martin",
-                null, timestamp, timestamp);
+                null, 42L, timestamp, timestamp);
         given(bookService.list(any()))
                 .willReturn(new BookListResponse(List.of(book), new PaginationResponse(1, 10, 21, 3)));
 
