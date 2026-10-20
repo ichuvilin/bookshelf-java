@@ -1,9 +1,43 @@
-import {useMutation, useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from 'react-router-dom';
 import {toast} from 'sonner';
 import {authApi} from './client';
 import {useAuthStore} from '@/stores/auth';
 import type {AuthResponse, LoginRequest, PublicUser, RegisterRequest, UpdateUserRequest, User} from '@/types/api';
+
+type JavaUser = {
+    id: number;
+    username: string;
+    email: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+type JavaAuthResponse = {
+    accessToken: string;
+    tokenType: 'Bearer';
+    expiresIn: number;
+    user: JavaUser;
+};
+
+function mapUser(user: JavaUser): User {
+    return {
+        id: String(user.id),
+        username: user.username,
+        email: user.email,
+        created_at: user.createdAt,
+        updated_at: user.updatedAt,
+    };
+}
+
+function mapAuthResponse(response: JavaAuthResponse): AuthResponse {
+    return {
+        access_token: response.accessToken,
+        token_type: response.tokenType,
+        expires_in: response.expiresIn,
+        user: mapUser(response.user),
+    };
+}
 
 export function useLogin() {
     const navigate = useNavigate();
@@ -11,8 +45,8 @@ export function useLogin() {
 
     return useMutation({
         mutationFn: async (data: LoginRequest) => {
-            const response = await authApi.post<AuthResponse>('/api/v1/auth/login', data);
-            return response.data;
+            const response = await authApi.post<JavaAuthResponse>('/api/v1/auth/login', data);
+            return mapAuthResponse(response.data);
         },
         onSuccess: (data) => {
             setAuth(data.access_token, data.user, data.expires_in);
@@ -20,7 +54,7 @@ export function useLogin() {
             navigate('/');
         },
         onError: () => {
-            toast.error('Неверный email или пароль');
+            toast.error('Не удалось войти. Проверьте email и пароль.');
         },
     });
 }
@@ -31,8 +65,8 @@ export function useRegister() {
 
     return useMutation({
         mutationFn: async (data: RegisterRequest) => {
-            const response = await authApi.post<AuthResponse>('/api/v1/auth/register', data);
-            return response.data;
+            const response = await authApi.post<JavaAuthResponse>('/api/v1/auth/register', data);
+            return mapAuthResponse(response.data);
         },
         onSuccess: (data) => {
             setAuth(data.access_token, data.user, data.expires_in);
@@ -40,30 +74,27 @@ export function useRegister() {
             navigate('/');
         },
         onError: (error: any) => {
-            const message = error.response?.data?.message || 'Ошибка регистрации';
+            const status = error.response?.status;
+            const message = status === 409
+                ? 'Пользователь с таким email или именем уже существует'
+                : error.response?.data?.message || 'Ошибка регистрации';
             toast.error(message);
         },
     });
 }
 
-// Project 2: Logout with API call
+// The Java auth service uses stateless JWT access tokens and has no logout endpoint.
+// Logout is therefore performed locally by removing the token.
 export function useLogout() {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
 
     return useMutation({
-        mutationFn: async () => {
-            await authApi.post('/api/v1/auth/logout');
-        },
+        mutationFn: async () => undefined,
         onSuccess: () => {
             logout();
             navigate('/');
             toast.success('Вы вышли из аккаунта');
-        },
-        onError: () => {
-            // Logout locally even if API fails
-            logout();
-            navigate('/');
         },
     });
 }
@@ -74,8 +105,8 @@ export function useCurrentUser() {
     return useQuery({
         queryKey: ['currentUser'],
         queryFn: async () => {
-            const response = await authApi.get<User>('/api/v1/users/me');
-            return response.data;
+            const response = await authApi.get<JavaUser>('/api/v1/users/me');
+            return mapUser(response.data);
         },
         enabled: !!token,
     });
@@ -86,26 +117,29 @@ export function useUpdateProfile() {
 
     return useMutation({
         mutationFn: async (data: UpdateUserRequest) => {
-            const response = await authApi.put<User>('/api/v1/users/me', data);
-            return response.data;
+            const response = await authApi.put<JavaUser>('/api/v1/users/me', data);
+            return mapUser(response.data);
         },
         onSuccess: (data) => {
             setUser(data);
             toast.success('Профиль обновлён');
         },
-        onError: () => {
-            toast.error('Ошибка обновления профиля');
+        onError: (error: any) => {
+            const message = error.response?.status === 409
+                ? 'Это имя пользователя уже занято'
+                : 'Ошибка обновления профиля';
+            toast.error(message);
         },
     });
 }
 
-export function useUser(userId: string) {
-    return useQuery({
-        queryKey: ['users', userId],
+// Public user lookup is not currently part of the Java API contract.
+export function useUser(_userId: string) {
+    return useQuery<PublicUser>({
+        queryKey: ['users', _userId],
         queryFn: async () => {
-            const response = await authApi.get<PublicUser>(`/api/v1/users/${userId}`);
-            return response.data;
+            throw new Error('Публичный профиль пользователя пока не поддерживается Java API');
         },
-        enabled: !!userId,
+        enabled: false,
     });
 }
