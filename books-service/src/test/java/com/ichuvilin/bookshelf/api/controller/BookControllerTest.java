@@ -101,12 +101,13 @@ class BookControllerTest {
     void reviewListReturnsReviewsWithoutAuthentication() throws Exception {
         Instant timestamp = Instant.parse("2026-01-01T00:00:00Z");
         given(reviewService.getReviewsByBookId(7L)).willReturn(List.of(
-                new ReviewResponse(1L, 7L, 42L, 5, "Great", "Loved it", timestamp, timestamp)));
+                new ReviewResponse(1L, 7L, 42L, "ivan", 5, "Great", "Loved it", timestamp, timestamp)));
 
         mockMvc.perform(get("/api/v1/books/7/reviews"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].bookId").value(7))
+                .andExpect(jsonPath("$[0].username").value("ivan"))
                 .andExpect(jsonPath("$[0].rating").value(5))
                 .andExpect(jsonPath("$[0].title").value("Great"));
 
