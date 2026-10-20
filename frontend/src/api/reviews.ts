@@ -7,6 +7,7 @@ type JavaReview = {
     id: number;
     bookId: number;
     userId: number;
+    username: string;
     rating: number;
     title?: string | null;
     content: string;
@@ -19,8 +20,7 @@ function mapReview(review: JavaReview): Review {
         id: String(review.id),
         book_id: String(review.bookId),
         user_id: String(review.userId),
-        // books-service owns reviews but does not currently expose usernames.
-        user: {id: String(review.userId), username: `Пользователь #${review.userId}`},
+        user: {id: String(review.userId), username: review.username},
         rating: review.rating,
         title: review.title ?? undefined,
         content: review.content,
