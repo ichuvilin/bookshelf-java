@@ -2,6 +2,7 @@ package com.ichuvilin.bookshelf.config;
 
 import com.ichuvilin.bookshelf.auth.filter.JwtAuthenticationFilter;
 import com.ichuvilin.bookshelf.integration.auth.AuthClient;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(
+                        (request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth.requestMatchers(
                                 HttpMethod.GET, "/api/v1/books", "/api/v1/books/{id}", "/api/v1/books/{id}/reviews")
                         .permitAll()
