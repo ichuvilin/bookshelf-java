@@ -113,11 +113,12 @@ export function useUpdateBook(id: string) {
 
     return useMutation({
         mutationFn: async (data: UpdateBookRequest) => {
-            // Java's update DTO currently supports only title, author and description.
             const response = await booksApi.put<JavaBook>(`/api/v1/books/${id}`, {
                 title: data.title,
                 author: data.author,
                 description: data.description,
+                isbn: data.isbn,
+                publishedYear: data.published_year ? `${data.published_year}-01-01` : undefined,
             });
             return mapBook(response.data);
         },
