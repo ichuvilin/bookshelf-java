@@ -4,13 +4,16 @@ import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.api.model.response.BookResponse;
 import com.ichuvilin.bookshelf.api.model.response.PaginationResponse;
 import com.ichuvilin.bookshelf.api.model.response.ReviewResponse;
+import com.ichuvilin.bookshelf.config.SecurityConfig;
 import com.ichuvilin.bookshelf.exception.GlobalExceptionHandler;
+import com.ichuvilin.bookshelf.integration.auth.AuthClient;
 import com.ichuvilin.bookshelf.service.BookService;
 import com.ichuvilin.bookshelf.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,12 +22,14 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class BookControllerTest {
 
     @Autowired
@@ -35,6 +40,9 @@ class BookControllerTest {
 
     @MockitoBean
     private ReviewService reviewService;
+
+    @MockitoBean
+    private AuthClient authClient;
 
     @Test
     void listReturnsDataAndPagination() throws Exception {
@@ -55,6 +63,8 @@ class BookControllerTest {
                 .andExpect(jsonPath("$.pagination.limit").value(10))
                 .andExpect(jsonPath("$.pagination.total").value(21))
                 .andExpect(jsonPath("$.pagination.totalPages").value(3));
+
+        verifyNoInteractions(authClient);
     }
 
     @Test
@@ -88,7 +98,7 @@ class BookControllerTest {
     }
 
     @Test
-    void reviewListReturnsReviews() throws Exception {
+    void reviewListReturnsReviewsWithoutAuthentication() throws Exception {
         Instant timestamp = Instant.parse("2026-01-01T00:00:00Z");
         given(reviewService.getReviewsByBookId(7L)).willReturn(List.of(
                 new ReviewResponse(1L, 7L, 42L, 5, "Great", "Loved it", timestamp, timestamp)));
@@ -99,5 +109,23 @@ class BookControllerTest {
                 .andExpect(jsonPath("$[0].bookId").value(7))
                 .andExpect(jsonPath("$[0].rating").value(5))
                 .andExpect(jsonPath("$[0].title").value("Great"));
+
+        verifyNoInteractions(authClient);
+    }
+
+    @Test
+    void creatingBookRequiresAuthentication() throws Exception {
+        mockMvc.perform(post("/api/v1/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Clean Code",
+                                  "author": "Robert C. Martin"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized());
+
+        verifyNoInteractions(bookService);
+        verifyNoInteractions(authClient);
     }
 }
