@@ -4,6 +4,7 @@ import com.ichuvilin.bookshelf.api.model.request.UpdateUserRequest;
 import com.ichuvilin.bookshelf.db.entity.User;
 import com.ichuvilin.bookshelf.db.repository.UserRepository;
 import com.ichuvilin.bookshelf.domain.UserPublic;
+import com.ichuvilin.bookshelf.domain.UserSummary;
 import com.ichuvilin.bookshelf.exception.UserNotFoundException;
 import com.ichuvilin.bookshelf.exception.UsernameAlreadyExistsException;
 import jakarta.validation.Valid;
@@ -61,9 +62,14 @@ public class UserService {
         return UserPublic.toPublic(repository.save(user));
     }
 
-    public List<UserPublic> getUsersById(List<Long> userIds) {
-        List<User> users = repository.findAllById(userIds);
-        return users.stream().map(UserPublic::toPublic).toList();
+    public List<UserSummary> getUsersById(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return List.of();
+        }
+
+        return repository.findAllById(userIds).stream()
+                .map(user -> new UserSummary(user.getId(), user.getUsername()))
+                .toList();
     }
 
 }
