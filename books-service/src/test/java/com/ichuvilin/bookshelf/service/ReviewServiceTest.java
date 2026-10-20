@@ -7,6 +7,8 @@ import com.ichuvilin.bookshelf.db.repository.ReviewRepository;
 import com.ichuvilin.bookshelf.exception.BookNotFoundException;
 import com.ichuvilin.bookshelf.exception.NotReviewOwnerException;
 import com.ichuvilin.bookshelf.exception.ReviewNotFoundException;
+import com.ichuvilin.bookshelf.integration.auth.AuthClient;
+import com.ichuvilin.bookshelf.integration.auth.dto.AuthUserResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,6 +36,9 @@ class ReviewServiceTest {
     @Mock
     private BookRepository bookRepository;
 
+    @Mock
+    private AuthClient authClient;
+
     @InjectMocks
     private ReviewService reviewService;
 
@@ -52,6 +57,7 @@ class ReviewServiceTest {
                 .build();
         when(bookRepository.existsById(7L)).thenReturn(true);
         when(reviewRepository.findAllByBookId(7L)).thenReturn(List.of(review));
+        when(authClient.getUsersByIds(List.of(42L))).thenReturn(List.of(new AuthUserResponse(42L, "ivan")));
 
         var result = reviewService.getReviewsByBookId(7L);
 
@@ -59,6 +65,7 @@ class ReviewServiceTest {
         assertEquals(1L, result.getFirst().id());
         assertEquals(7L, result.getFirst().bookId());
         assertEquals(42L, result.getFirst().userId());
+        assertEquals("ivan", result.getFirst().username());
         assertEquals(5, result.getFirst().rating());
         assertEquals("Great", result.getFirst().title());
         verify(bookRepository).existsById(7L);
@@ -77,6 +84,7 @@ class ReviewServiceTest {
     @Test
     void createsReviewWhenBookExists() {
         when(bookRepository.existsById(7L)).thenReturn(true);
+        when(authClient.getUsersByIds(List.of(42L))).thenReturn(List.of(new AuthUserResponse(42L, "ivan")));
         when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> {
             Review saved = invocation.getArgument(0);
             saved.setId(9L);
@@ -89,6 +97,7 @@ class ReviewServiceTest {
         assertEquals(9L, response.id());
         assertEquals(7L, response.bookId());
         assertEquals(42L, response.userId());
+        assertEquals("ivan", response.username());
         assertEquals(5, response.rating());
         assertEquals("Great", response.title());
         assertEquals("Loved it", response.content());
