@@ -17,6 +17,7 @@ class AuthClientTest {
     private static final String BASE_URL = "http://auth-service";
     private static final String SERVICE_KEY = "test-service-key";
     private static final String VERIFY_PATH = "/internal/v1/auth/verify";
+    private static final String USERS_BATCH_PATH = "/internal/v1/users/batch";
 
     private MockRestServiceServer server;
     private AuthClient authClient;
@@ -26,6 +27,33 @@ class AuthClientTest {
         RestClient.Builder builder = RestClient.builder().baseUrl(BASE_URL);
         server = MockRestServiceServer.bindTo(builder).build();
         authClient = new AuthClient(builder.build(), SERVICE_KEY);
+    }
+
+    @Test
+    void getUsersByIdsReturnsUserSummariesAndSendsServiceKey() {
+        server.expect(requestTo(BASE_URL + USERS_BATCH_PATH))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(header("X-Service-Key", SERVICE_KEY))
+                .andExpect(content().json("""
+                        {"ids":[42,43]}
+                        """))
+                .andRespond(withSuccess("""
+                        {
+                          "users": [
+                            {"id": 42, "username": "ivan"},
+                            {"id": 43, "username": "anna"}
+                          ]
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        var result = authClient.getUsersByIds(java.util.List.of(42L, 43L, 42L));
+
+        assertEquals(2, result.size());
+        assertEquals(42L, result.getFirst().id());
+        assertEquals("ivan", result.getFirst().username());
+        assertEquals(43L, result.getLast().id());
+        assertEquals("anna", result.getLast().username());
+        server.verify();
     }
 
     @Test
