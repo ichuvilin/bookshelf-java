@@ -1,3 +1,5 @@
 package com.ichuvilin.bookshelf.api.model.request;
 
-public record BookUpdateRequest(String title, String description, String author) {}
+import java.time.LocalDate;
+
+public record BookUpdateRequest(String title, String description, String author, String isbn, LocalDate publishedYear) {}
