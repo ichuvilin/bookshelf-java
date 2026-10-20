@@ -44,6 +44,9 @@ public class ReviewService {
 
     @Transactional(rollbackFor = Exception.class)
     public ReviewResponse create(Long bookId, Long userId, ReviewCreationRequest request) {
+        if (bookRepository.existsById(bookId)) {
+            throw new BookNotFoundException();
+        }
         Review review = Review.builder()
                 .bookId(bookId)
                 .userId(userId)

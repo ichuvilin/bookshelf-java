@@ -75,7 +75,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ReviewNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleReviewNotFound(
             ReviewNotFoundException exception, HttpServletRequest request) {
-        HttpStatus status = HttpStatus.FORBIDDEN;
+        HttpStatus status = HttpStatus.NOT_FOUND;
 
         ErrorResponse response = new ErrorResponse(
                 Instant.now(),
