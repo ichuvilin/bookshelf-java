@@ -10,6 +10,7 @@ type JavaBook = {
     description?: string | null;
     isbn?: string | null;
     publishedYear?: string | null;
+    createdBy: number | null;
     createdAt: string;
     updatedAt: string;
 };
@@ -33,27 +34,24 @@ function mapBook(book: JavaBook): Book {
         author: book.author,
         description: book.description ?? undefined,
         isbn: book.isbn ?? undefined,
-        published_year: book.publishedYear ?? undefined,
+        published_year: book.publishedYear ? Number(book.publishedYear.slice(0, 4)) : undefined,
         average_rating: null,
         reviews_count: 0,
+        created_by: book.createdBy == null ? '' : String(book.createdBy),
         created_at: book.createdAt,
         updated_at: book.updatedAt,
-    };
-}
-
-function mapPagination(pagination: JavaPagination) {
-    return {
-        page: pagination.page,
-        limit: pagination.limit,
-        total: pagination.total,
-        total_pages: pagination.totalPages,
     };
 }
 
 function mapBookList(response: JavaBookListResponse): BookListResponse {
     return {
         data: response.data.map(mapBook),
-        pagination: mapPagination(response.pagination),
+        pagination: {
+            page: response.pagination.page,
+            limit: response.pagination.limit,
+            total: response.pagination.total,
+            total_pages: response.pagination.totalPages,
+        },
     };
 }
 
@@ -95,9 +93,7 @@ export function useCreateBook() {
                 description: data.description,
                 isbn: data.isbn,
                 // Java currently models publishedYear as LocalDate.
-                publishedYear: data.published_year
-                    ? (String(data.published_year).length === 4 ? `${data.published_year}-01-01` : data.published_year)
-                    : undefined,
+                publishedYear: data.published_year ? `${data.published_year}-01-01` : undefined,
             };
             const response = await booksApi.post<JavaBook>('/api/v1/books', payload);
             return mapBook(response.data);
