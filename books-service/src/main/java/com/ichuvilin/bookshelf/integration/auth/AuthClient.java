@@ -4,11 +4,11 @@ import com.ichuvilin.bookshelf.exception.AuthServiceUnavailableException;
 import com.ichuvilin.bookshelf.integration.auth.dto.VerifyTokenRequest;
 import com.ichuvilin.bookshelf.integration.auth.dto.UserBatchRequest;
 import com.ichuvilin.bookshelf.integration.auth.dto.AuthUserResponse;
+import com.ichuvilin.bookshelf.integration.auth.dto.UsersBatchResponse;
 import com.ichuvilin.bookshelf.integration.auth.dto.VerifyTokenResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClientException;
 
 import java.util.Collection;
@@ -33,19 +33,19 @@ public class AuthClient {
         }
 
         try {
-            List<AuthUserResponse> response = restClient
+            UsersBatchResponse response = restClient
                     .post()
                     .uri(USERS_BATCH_PATH)
                     .header("X-Service-Key", secretKey)
                     .body(new UserBatchRequest(userIds.stream().distinct().toList()))
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+                    .body(UsersBatchResponse.class);
 
-            if (response == null) {
+            if (response == null || response.users() == null) {
                 throw new AuthServiceUnavailableException("Auth service returned an empty batch user response");
             }
 
-            return response;
+            return response.users();
         } catch (RestClientException ex) {
             throw new AuthServiceUnavailableException("Failed to fetch users from auth service", ex);
         }
