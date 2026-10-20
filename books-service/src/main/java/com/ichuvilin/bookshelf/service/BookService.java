@@ -96,21 +96,15 @@ public class BookService {
             throw new NotBookOwnerException();
         }
 
-        if (book.getTitle() != null
-                && request.title() != null
-                && !request.title().equals(book.getTitle())) {
+        if (request.title() != null && !request.title().equals(book.getTitle())) {
             book.setTitle(request.title());
         }
 
-        if (book.getDescription() != null
-                && request.description() != null
-                && !request.description().equals(book.getDescription())) {
+        if (request.description() != null && !request.description().equals(book.getDescription())) {
             book.setDescription(request.description());
         }
 
-        if (book.getAuthor() != null
-                && request.author() != null
-                && !request.author().equals(book.getAuthor())) {
+        if (request.author() != null && !request.author().equals(book.getAuthor())) {
             book.setAuthor(request.author());
         }
 
