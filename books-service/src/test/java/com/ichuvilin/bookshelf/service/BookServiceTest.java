@@ -1,10 +1,12 @@
 package com.ichuvilin.bookshelf.service;
 
 import com.ichuvilin.bookshelf.api.model.request.BookListRequest;
+import com.ichuvilin.bookshelf.api.model.request.BookUpdateRequest;
 import com.ichuvilin.bookshelf.api.model.response.BookListResponse;
 import com.ichuvilin.bookshelf.db.entity.Book;
 import com.ichuvilin.bookshelf.db.repository.BookRepository;
 import com.ichuvilin.bookshelf.exception.BookNotFoundException;
+import com.ichuvilin.bookshelf.exception.NotBookOwnerException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,6 +27,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -97,6 +100,43 @@ class BookServiceTest {
         when(repository.findById(404L)).thenReturn(Optional.empty());
 
         assertThrows(BookNotFoundException.class, () -> bookService.getById(404L));
+    }
+
+
+    @Test
+    void deletesBookWhenUserIsOwner() {
+        Book book = book(7L, "Clean Code", "Robert C. Martin");
+        book.setUserId(42L);
+        when(repository.findById(7L)).thenReturn(Optional.of(book));
+
+        bookService.delete(7L, 42L);
+
+        verify(repository).delete(book);
+    }
+
+    @Test
+    void rejectsDeletingBookOwnedByAnotherUser() {
+        Book book = book(7L, "Clean Code", "Robert C. Martin");
+        book.setUserId(42L);
+        when(repository.findById(7L)).thenReturn(Optional.of(book));
+
+        assertThrows(NotBookOwnerException.class, () -> bookService.delete(7L, 99L));
+
+        verify(repository, never()).delete(any(Book.class));
+    }
+
+    @Test
+    void updateCanFillPreviouslyNullDescription() {
+        Book book = book(7L, "Clean Code", "Robert C. Martin");
+        book.setUserId(42L);
+        book.setDescription(null);
+        when(repository.findById(7L)).thenReturn(Optional.of(book));
+        when(repository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = bookService.update(7L, 42L,
+                new BookUpdateRequest(null, "New description", null));
+
+        assertEquals("New description", response.description());
     }
 
     private Book book(Long id, String title, String author) {
