@@ -1,4 +1,4 @@
-// Types based on OpenAPI spec: project2-*-openapi.yaml
+// Types used by the UI. API-specific Java DTOs are mapped in the API clients.
 
 // ==================== AUTH ====================
 export interface RegisterRequest {
@@ -19,7 +19,6 @@ export interface AuthResponse {
     user: User;
 }
 
-// ==================== USER ====================
 export interface User {
     id: string;
     username: string;
@@ -35,7 +34,7 @@ export interface PublicUser {
 }
 
 export interface UpdateUserRequest {
-    username?: string;
+    username: string;
 }
 
 // ==================== BOOK ====================
@@ -109,9 +108,9 @@ export interface CreateReviewRequest {
 }
 
 export interface UpdateReviewRequest {
-    rating?: number;
+    rating: number;
     title?: string;
-    content?: string;
+    content: string;
 }
 
 export interface ReviewListResponse {
@@ -146,16 +145,12 @@ export interface HealthResponse {
     checks?: Record<string, string>;
 }
 
-// ==================== QUERY PARAMS ====================
 export interface BooksParams {
     page?: number;
     limit?: number;
     search?: string;
-    sort?: 'title' | 'author' | 'created_at' | 'rating' | 'published_year';
+    sort?: 'title' | 'author' | 'created_at';
     order?: 'asc' | 'desc';
-    year_from?: number;
-    year_to?: number;
-    min_rating?: number;
 }
 
 export interface ReviewsParams {
