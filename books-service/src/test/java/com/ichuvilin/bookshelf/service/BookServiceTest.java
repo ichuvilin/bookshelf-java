@@ -53,6 +53,7 @@ class BookServiceTest {
         assertEquals(1, response.data().size());
         assertEquals(7L, response.data().getFirst().id());
         assertEquals("Clean Code", response.data().getFirst().title());
+        assertEquals(book.getUserId(), response.data().getFirst().createdBy());
         assertEquals(2, response.pagination().page());
         assertEquals(5, response.pagination().limit());
         assertEquals(12, response.pagination().total());
@@ -134,7 +135,7 @@ class BookServiceTest {
         when(repository.save(any(Book.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         var response = bookService.update(7L, 42L,
-                new BookUpdateRequest(null, "New description", null));
+                new BookUpdateRequest(null, "New description", null, null, null));
 
         assertEquals("New description", response.description());
     }
@@ -148,6 +149,7 @@ class BookServiceTest {
                 .description("Description")
                 .isbn("978-0134685991")
                 .publishedYear(LocalDate.of(2018, 1, 1))
+                .userId(42L)
                 .createdAt(timestamp)
                 .updatedAt(timestamp)
                 .build();
