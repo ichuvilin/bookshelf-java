@@ -6,6 +6,7 @@ public record ReviewResponse(
         Long id,
         Long bookId,
         Long userId,
+        String username,
         Integer rating,
         String title,
         String content,
