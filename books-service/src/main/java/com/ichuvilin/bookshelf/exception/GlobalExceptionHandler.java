@@ -72,6 +72,36 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(response);
     }
 
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleReviewNotFound(
+            ReviewNotFoundException exception, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ErrorResponse response = new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(status).body(response);
+    }
+
+    @ExceptionHandler(NotReviewOwnerException.class)
+    public ResponseEntity<ErrorResponse> handleNotReviewOwner(
+            NotReviewOwnerException exception, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.FORBIDDEN;
+
+        ErrorResponse response = new ErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(status).body(response);
+    }
+
     private ResponseEntity<ErrorResponse> badRequest(BindException exception, HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
 
