@@ -102,6 +102,12 @@ public class BookService {
         if (request.author() != null && !request.author().equals(book.getAuthor())) {
             book.setAuthor(request.author());
         }
+        if (request.isbn() != null && !request.isbn().equals(book.getIsbn())) {
+            book.setIsbn(request.isbn());
+        }
+        if (request.publishedYear() != null && !request.publishedYear().equals(book.getPublishedYear())) {
+            book.setPublishedYear(request.publishedYear());
+        }
 
         return toResponse(repository.save(book));
     }
