@@ -87,7 +87,6 @@ export function HomePage() {
                             <SelectItem value="created_at">По дате</SelectItem>
                             <SelectItem value="title">По названию</SelectItem>
                             <SelectItem value="author">По автору</SelectItem>
-                            <SelectItem value="rating">По рейтингу</SelectItem>
                         </SelectContent>
                     </Select>
 
